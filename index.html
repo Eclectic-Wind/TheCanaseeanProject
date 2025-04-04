@@ -47,80 +47,41 @@
       const navLinks = document.querySelectorAll(".nav-link");
       const contentContainer = document.getElementById("content-container");
 
-      // --- Wiki Structure (Simulated Index) ---
-      // In a real project, this structure would ideally be in a separate
-      // `wiki_index.json` file fetched by the script.
-      // For this example, it's defined directly in the JS.
-      // Structure: { name: "...", type: "folder/file", children: [...] }
-      const wikiStructure = {
-        name: "root",
-        type: "folder",
-        path: "wiki", // Base path for fetching files
-        children: [
-          { name: "Introduction.md", type: "file" },
-          {
-            name: "Lore",
-            type: "folder",
-            children: [
-              { name: "History.md", type: "file" },
-              { name: "Deities.md", type: "file" },
-              {
-                name: "Regions",
-                type: "folder",
-                children: [
-                  { name: "Canaseea.md", type: "file" },
-                  { name: "Asdent.md", type: "file" },
-                ],
-              },
-            ],
-          },
-          {
-            name: "Magic System",
-            type: "folder",
-            children: [
-              { name: "Semeiographia_Overview.md", type: "file" },
-              { name: "Glyphs.md", type: "file" },
-              { name: "Radicals.md", type: "file" },
-            ],
-          },
-          { name: "Characters.md", type: "file" },
-          { name: "EmptyFolder", type: "folder", children: [] },
-        ],
-      };
+      // --- Removed Wiki Structure and State ---
+      // const wikiStructure = { ... }; // Removed
+      // let wikiHistory = []; // Removed
 
-      // --- Wiki State ---
-      let wikiHistory = []; // Stack to keep track of navigation path
-
-      // --- Content Loading Function ---
+      // --- Content Loading Function (Simplified) ---
       async function loadContent(pageName) {
         contentContainer.classList.remove("visible");
         contentContainer.innerHTML =
           '<p class="message loading-message">Loading...</p>';
 
-        try {
-          // Special handling for the wiki page
-          if (pageName === "wiki") {
-            await loadWikiPage(); // Load the base wiki structure/nav
-          } else {
-            // Standard HTML page loading
-            const url = `${pageName}.html`;
-            const response = await fetch(url);
-            if (!response.ok) {
-              throw new Error(
-                `HTTP error! status: ${response.status} loading ${url}`
-              );
-            }
-            const htmlContent = await response.text();
-            contentContainer.innerHTML = htmlContent;
+        // Validate pageName to prevent loading unexpected files
+        const allowedPages = ["quick_info", "documents", "wiki"];
+        if (!allowedPages.includes(pageName)) {
+          console.error(`Attempted to load disallowed page: ${pageName}`);
+          contentContainer.innerHTML = `<p class="message error-message">Invalid page requested.</p>`;
+          contentContainer.classList.add("visible");
+          return;
+        }
 
-            // Post-load setup for non-wiki pages
-            if (pageName === "quick_info") {
-              setupInternalLinks();
-            }
-            // Add setup for other pages if needed
+        try {
+          // Standard HTML page loading
+          const url = `${pageName}.html`;
+          const response = await fetch(url);
+          if (!response.ok) {
+            throw new Error(
+              `HTTP error! status: ${response.status} loading ${url}`
+            );
+          }
+          const htmlContent = await response.text();
+          contentContainer.innerHTML = htmlContent;
+
+          if (pageName === "quick_info") {
+            setupInternalLinks();
           }
 
-          // Short delay for smooth transition
           setTimeout(() => {
             contentContainer.classList.add("visible");
           }, 50); // Shorter delay
@@ -131,324 +92,50 @@
         }
       }
 
-      // --- Wiki Specific Functions ---
+      // --- Removed Wiki Specific Functions ---
+      // loadWikiPage, findWikiNode, displayWikiNav, handleWikiLinkClick,
+      // navigateWikiBack, displayMarkdownFile, updateWikiHash functions removed.
 
       /**
-       * Loads the initial structure for the Wiki page.
-       */
-      async function loadWikiPage() {
-        // Fetch the basic wiki.html structure first
-        const response = await fetch("wiki.html");
-        if (!response.ok) throw new Error("Could not load wiki.html");
-        const wikiHtml = await response.text();
-        contentContainer.innerHTML = wikiHtml;
-
-        // Reset history and display root navigation
-        wikiHistory = [wikiStructure]; // Start at the root
-        displayWikiNav(wikiStructure); // Display the root folder contents
-        updateWikiHash(); // Update URL hash to #wiki
-      }
-
-      /**
-       * Finds a node (folder/file) in the wikiStructure based on a path array.
-       * @param {string[]} pathArray - Array of names representing the path.
-       * @returns {object | null} - The node object or null if not found.
-       */
-      function findWikiNode(pathArray) {
-        let currentNode = wikiStructure;
-        if (!pathArray || pathArray.length === 0) {
-          return currentNode; // Return root if path is empty
-        }
-        for (const segment of pathArray) {
-          if (currentNode.type !== "folder" || !currentNode.children) {
-            return null; // Path segment invalid or not a folder
-          }
-          const foundChild = currentNode.children.find(
-            (child) => child.name === segment
-          );
-          if (!foundChild) {
-            return null; // Segment not found in children
-          }
-          currentNode = foundChild;
-        }
-        return currentNode;
-      }
-
-      /**
-       * Displays the navigation list for a given wiki folder node.
-       * @param {object} folderNode - The folder node from wikiStructure.
-       */
-      function displayWikiNav(folderNode) {
-        const navContainer = contentContainer.querySelector("#wiki-nav");
-        const contentDisplay = contentContainer.querySelector("#wiki-content");
-
-        if (!navContainer || !contentDisplay) {
-          console.error("Wiki container elements not found in wiki.html");
-          contentContainer.innerHTML = `<p class="message error-message">Error: Wiki structure could not be loaded.</p>`;
-          return;
-        }
-
-        // Clear previous content
-        navContainer.innerHTML = "";
-        contentDisplay.innerHTML =
-          '<p class="message info-message">Select a file or folder from the list.</p>'; // Placeholder
-
-        // Add Back Button (if not at root)
-        if (wikiHistory.length > 1) {
-          const backButton = document.createElement("button");
-          backButton.innerHTML = '<i class="fas fa-arrow-left"></i> Back';
-          backButton.className = "wiki-back-button";
-          backButton.onclick = navigateWikiBack;
-          navContainer.appendChild(backButton);
-        }
-
-        // Build Navigation List
-        const ul = document.createElement("ul");
-        ul.className = "wiki-nav-list";
-
-        if (folderNode.children && folderNode.children.length > 0) {
-          // Sort folders first, then files, alphabetically
-          const sortedChildren = [...folderNode.children].sort((a, b) => {
-            if (a.type === b.type) {
-              return a.name.localeCompare(b.name); // Alphabetical if same type
-            }
-            return a.type === "folder" ? -1 : 1; // Folders first
-          });
-
-          sortedChildren.forEach((item) => {
-            const li = document.createElement("li");
-            const a = document.createElement("a");
-            a.href = "#"; // Prevent page reload
-            a.dataset.name = item.name;
-            a.dataset.type = item.type;
-
-            // Add icon based on type
-            const iconClass =
-              item.type === "folder" ? "fa-folder" : "fa-file-alt";
-            a.innerHTML = `<i class="fas ${iconClass}"></i> ${item.name}`;
-
-            a.onclick = (event) => {
-              event.preventDefault();
-              handleWikiLinkClick(item);
-            };
-
-            li.appendChild(a);
-            ul.appendChild(li);
-          });
-        } else {
-          const li = document.createElement("li");
-          li.textContent = "(This folder is empty)";
-          li.style.fontStyle = "italic";
-          li.style.color = "#888";
-          ul.appendChild(li);
-        }
-
-        navContainer.appendChild(ul);
-      }
-
-      /**
-       * Handles clicks on wiki navigation links (folders or files).
-       * @param {object} itemNode - The clicked node from wikiStructure.
-       */
-      function handleWikiLinkClick(itemNode) {
-        if (itemNode.type === "folder") {
-          wikiHistory.push(itemNode); // Add folder to history
-          displayWikiNav(itemNode);
-        } else {
-          // Don't push file to history stack, just display it
-          displayMarkdownFile(itemNode);
-        }
-        updateWikiHash(); // Update URL after navigation or file view
-      }
-
-      /**
-       * Navigates back up the wiki folder structure.
-       */
-      function navigateWikiBack() {
-        if (wikiHistory.length > 1) {
-          wikiHistory.pop(); // Remove current folder from history
-          const parentFolder = wikiHistory[wikiHistory.length - 1];
-          displayWikiNav(parentFolder);
-          updateWikiHash(); // Update URL hash
-        }
-      }
-
-      /**
-       * Fetches and displays a Markdown file's content.
-       * @param {object} fileNode - The file node from wikiStructure.
-       */
-      async function displayMarkdownFile(fileNode) {
-        const contentDisplay = contentContainer.querySelector("#wiki-content");
-        if (!contentDisplay) return;
-
-        contentDisplay.innerHTML =
-          '<p class="message loading-message">Loading file...</p>';
-
-        // Construct the full path relative to the base 'wiki' path
-        const currentFolderPath = wikiHistory
-          .slice(1) // Skip root
-          .map((node) => node.name)
-          .join("/");
-        const basePath = wikiStructure.path; // e.g., "wiki"
-        const filePath = `${basePath}/${
-          currentFolderPath ? currentFolderPath + "/" : ""
-        }${fileNode.name}`;
-
-        try {
-          const response = await fetch(filePath);
-          if (!response.ok) {
-            throw new Error(
-              `HTTP error! status: ${response.status} loading ${filePath}`
-            );
-          }
-          const markdownContent = await response.text();
-
-          // Use Marked.js to parse Markdown to HTML
-          // Ensure Marked is loaded before calling
-          if (typeof marked === "function") {
-            // Sanitize potentially harmful HTML (basic example)
-            const dirtyHtml = marked.parse(markdownContent);
-            // In a real app, use a proper sanitizer like DOMPurify
-            contentDisplay.innerHTML = dirtyHtml; // For now, directly insert
-          } else {
-            throw new Error("Marked.js library not loaded.");
-          }
-        } catch (error) {
-          console.error("Error loading Markdown file:", error);
-          contentDisplay.innerHTML = `<p class="message error-message">Error loading file: ${fileNode.name}. (${error.message})</p>`;
-        }
-      }
-
-      /**
-       * Updates the URL hash based on the current wiki state.
-       */
-      function updateWikiHash() {
-        let hashPath = "wiki";
-        // Get path from history, skipping the root 'wiki' node itself
-        const pathSegments = wikiHistory.slice(1).map((node) => node.name);
-        if (pathSegments.length > 0) {
-          hashPath += "/" + pathSegments.join("/");
-        }
-
-        // Check if a file is currently displayed (not in history stack)
-        const contentDisplay = contentContainer.querySelector("#wiki-content");
-        // A simple check: if content isn't the placeholder or nav, assume it's a file.
-        // A more robust method might involve storing the currently displayed file node.
-        // For this example, we'll rely on the path constructed from history.
-        // If a file link was the *last* thing clicked, its path isn't fully in history.
-        // We need a better way to track the *currently viewed file*.
-
-        // Let's refine: The history stack only tracks folders visited.
-        // When a file is viewed, its name isn't pushed.
-        // We need to know the *last clicked item* if it was a file.
-
-        // Simplification for now: hash reflects the *folder* path.
-        // Clicking a file doesn't change the folder path in the hash.
-        // A full implementation might add the filename to the hash temporarily.
-
-        // Only update hash if it's different to prevent redundant history entries
-        if (window.location.hash !== `#${hashPath}`) {
-          // Use replaceState to avoid polluting browser history excessively during nav
-          // Use pushState if you want each step browseable via back/forward
-          history.replaceState(null, "", `#${hashPath}`);
-        }
-      }
-
-      /**
-       * Parses the URL hash and attempts to navigate the wiki accordingly.
+       * Parses the URL hash and attempts to load the corresponding page.
+       * Simplified to handle only non-wiki pages.
        */
       function handleHashChange() {
         const hash = window.location.hash.substring(1); // Remove '#'
-        if (!hash.startsWith("wiki")) {
-          // If hash is not for the wiki, or is empty, load default or other page
-          if (hash && !["quick_info", "documents"].includes(hash)) {
-            // If hash exists but isn't a known page, maybe load default
-            if (
-              !contentContainer.innerHTML ||
-              contentContainer.innerHTML.includes("loading-message")
-            ) {
-              loadContent("quick_info"); // Load default if nothing else specified
-            }
-          } else if (hash) {
-            // Load the specified page if it's not the wiki
-            loadContent(hash);
-          }
-          // If hash is empty or just '#', the initial load handles it.
-          return; // Exit if not a wiki hash
-        }
+        const allowedPages = ["quick_info", "documents", "wiki"];
 
-        // Handle wiki-specific hash
-        const pathSegments = hash.split("/").slice(1); // Remove 'wiki' part
-        const targetNode = findWikiNode(pathSegments);
-
-        if (targetNode && targetNode.type === "folder") {
-          // Navigate to the folder specified in the hash
-          // Reconstruct history stack based on path
-          wikiHistory = [wikiStructure];
-          let current = wikiStructure;
-          for (const segment of pathSegments) {
-            const nextNode = current.children.find((c) => c.name === segment);
-            if (nextNode && nextNode.type === "folder") {
-              wikiHistory.push(nextNode);
-              current = nextNode;
-            } else {
-              break; // Invalid path segment
-            }
-          }
-          // Ensure the wiki base HTML is loaded if needed
-          if (!contentContainer.querySelector("#wiki-nav")) {
-            loadWikiPage().then(() => displayWikiNav(targetNode));
-          } else {
-            displayWikiNav(targetNode);
-          }
-        } else if (targetNode && targetNode.type === "file") {
-          // If the hash directly points to a file (less ideal)
-          // We need the parent folder context to display nav correctly
-          const parentPathSegments = pathSegments.slice(0, -1);
-          const parentNode = findWikiNode(parentPathSegments);
-          if (parentNode && parentNode.type === "folder") {
-            // Reconstruct history to the parent folder
-            wikiHistory = [wikiStructure];
-            let current = wikiStructure;
-            for (const segment of parentPathSegments) {
-              const nextNode = current.children.find((c) => c.name === segment);
-              if (nextNode && nextNode.type === "folder") {
-                wikiHistory.push(nextNode);
-                current = nextNode;
-              } else {
-                break;
-              }
-            }
-            // Load wiki base, display parent nav, then display file
-            if (!contentContainer.querySelector("#wiki-nav")) {
-              loadWikiPage().then(() => {
-                displayWikiNav(parentNode);
-                displayMarkdownFile(targetNode);
-              });
-            } else {
-              displayWikiNav(parentNode);
-              displayMarkdownFile(targetNode);
-            }
-          } else {
-            // Cannot determine parent folder, load wiki root
-            loadContent("wiki");
-          }
+        if (allowedPages.includes(hash)) {
+          // Check if the content for the hash is already loaded or being loaded
+          // This prevents redundant loading if the hash is set programmatically
+          // A simple check might involve seeing if the content container is empty or has a loading message
+          const isLoading =
+            contentContainer.innerHTML.includes("loading-message");
+          const isEmpty = !contentContainer.innerHTML.trim();
+          // You might need a more robust check depending on your exact flow
+          // For now, we'll just load it if the hash is valid
+          loadContent(hash);
         } else {
-          // Invalid wiki path in hash, load wiki root
-          loadContent("wiki");
+          // If hash is invalid or empty, load the default page
+          // Ensure this doesn't conflict with initial load logic
+          if (
+            !contentContainer.innerHTML ||
+            contentContainer.innerHTML.includes("loading-message")
+          ) {
+            loadContent("quick_info"); // Load default
+          }
         }
       }
 
-      // --- Internal Link Handling (e.g., within quick_info.html) ---
       function setupInternalLinks() {
         contentContainer.addEventListener("click", function (event) {
+          // Check if the clicked element is an internal link
           if (event.target.matches(".internal-link")) {
-            event.preventDefault();
+            event.preventDefault(); // Prevent default anchor behavior
             const page = event.target.getAttribute("data-page");
             if (page) {
-              loadContent(page);
-              // Update hash for non-wiki internal links if desired
-              // window.location.hash = event.target.getAttribute("href");
+              // Update hash to trigger navigation via hashchange listener
+              window.location.hash = page;
+              // loadContent(page); // Let hashchange handle the loading
             }
           }
         });
@@ -481,11 +168,16 @@
         link.addEventListener("click", (event) => {
           event.preventDefault();
           const page = link.getAttribute("data-page");
-          if (page) {
+          // Ensure page is valid before setting hash
+          const allowedPages = ["quick_info", "documents", "wiki"];
+          if (page && allowedPages.includes(page)) {
             // Update hash to trigger navigation via hashchange listener
-            window.location.hash = page;
-            // Direct loadContent call is now handled by handleHashChange
-            // loadContent(page);
+            // Avoid setting hash if it's already the current one to prevent redundant loads/history entries
+            if (window.location.hash !== `#${page}`) {
+              window.location.hash = page;
+            }
+          } else if (page) {
+            console.warn(`Clicked on nav link with invalid page data: ${page}`);
           }
         });
       });

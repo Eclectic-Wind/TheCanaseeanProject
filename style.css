@@ -139,7 +139,6 @@ body {
   opacity: 1;
 }
 
-/* Basic styling for loaded content */
 #content-container h2 {
   font-size: 1.8rem;
   margin-bottom: 1rem;
@@ -163,30 +162,22 @@ body {
   margin-bottom: 1rem;
 }
 
-#content-container ul:not(.wiki-nav-list) {
-  /* Exclude wiki nav */
+#content-container ul {
   list-style: disc;
   margin-left: 2rem;
   margin-bottom: 1rem;
 }
 
-#content-container li:not(.wiki-nav-list li) {
-  /* Exclude wiki nav */
+#content-container li {
   margin-bottom: 0.5rem;
 }
 
-/* Style links within the content area */
-#content-container
-  a:not(.nav-link):not(.pdf-link):not(.internal-link):not(.wiki-nav-list a) {
-  /* Avoid affecting nav/pdf/internal/wiki links */
-  color: #0056b3; /* Standard link blue */
+#content-container a:not(.nav-link):not(.pdf-link) {
+  color: #0056b3;
   text-decoration: underline;
 }
 
-#content-container
-  a:not(.nav-link):not(.pdf-link):not(.internal-link):not(
-    .wiki-nav-list a
-  ):hover {
+#content-container a:not(.nav-link):not(.pdf-link):hover {
   color: #003d80;
 }
 
@@ -266,199 +257,4 @@ body {
   border: 1px solid #faebcc; /* Yellowish border */
   padding: 20px;
   text-align: center;
-}
-
-/* --- Wiki Specific Styles --- */
-
-/* Container for wiki navigation and content */
-#wiki-container {
-  display: flex;
-  flex-direction: row;
-  gap: 20px; /* Space between nav and content */
-  width: 100%;
-}
-
-/* Wiki navigation area */
-#wiki-nav {
-  flex: 0 0 250px; /* Fixed width for nav, adjust as needed */
-  padding-right: 20px;
-  border-right: 1px solid #eee; /* Separator line */
-  max-height: 70vh; /* Limit height and allow scrolling */
-  overflow-y: auto;
-}
-
-/* Wiki content display area */
-#wiki-content {
-  flex-grow: 1; /* Takes remaining space */
-  border: 1px solid #ddd; /* Border around content */
-  padding: 15px;
-  background-color: #fdfdfd; /* Slightly off-white background */
-  border-radius: 4px;
-  min-height: 300px; /* Ensure it has some height */
-  max-height: 70vh; /* Limit height and allow scrolling */
-  overflow-y: auto;
-}
-
-/* Wiki Back Button */
-.wiki-back-button {
-  display: block;
-  width: calc(100% - 10px); /* Adjust width slightly */
-  padding: 8px 10px;
-  margin-bottom: 15px;
-  background-color: #f0f0f0;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  cursor: pointer;
-  transition: background-color 0.2s ease;
-  text-align: left;
-  font-size: 0.9rem;
-  color: #333;
-}
-
-.wiki-back-button:hover {
-  background-color: #e0e0e0;
-}
-
-.wiki-back-button i {
-  margin-right: 8px;
-}
-
-/* Wiki navigation list */
-.wiki-nav-list {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-}
-
-.wiki-nav-list li {
-  margin-bottom: 5px;
-}
-
-.wiki-nav-list a {
-  display: block; /* Make the whole area clickable */
-  padding: 5px 8px;
-  text-decoration: none;
-  color: #333;
-  border-radius: 3px;
-  transition: background-color 0.2s ease;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.wiki-nav-list a:hover {
-  background-color: #e9e9e9;
-  color: #000;
-}
-
-.wiki-nav-list a i {
-  margin-right: 8px;
-  color: #666; /* Icon color */
-  width: 1.2em; /* Ensure icons align */
-  text-align: center;
-}
-
-.wiki-nav-list a i.fa-folder {
-  color: #a07a19; /* Folder icon color (goldish) */
-}
-
-.wiki-nav-list a i.fa-file-alt {
-  color: #555; /* File icon color */
-}
-
-/* Styling for rendered Markdown content */
-#wiki-content h1,
-#wiki-content h2,
-#wiki-content h3,
-#wiki-content h4,
-#wiki-content h5,
-#wiki-content h6 {
-  font-family: "Garamond", serif;
-  margin-top: 1.5em;
-  margin-bottom: 0.8em;
-  border-bottom: none; /* Remove default border if inheriting */
-  padding-bottom: 0;
-}
-
-#wiki-content h1 {
-  font-size: 1.8rem;
-  border-bottom: 1px solid #eee;
-  padding-bottom: 0.3em;
-}
-#wiki-content h2 {
-  font-size: 1.5rem;
-}
-#wiki-content h3 {
-  font-size: 1.3rem;
-}
-
-#wiki-content p {
-  font-size: 1rem;
-  line-height: 1.6;
-  margin-bottom: 1em;
-}
-
-#wiki-content ul,
-#wiki-content ol {
-  margin-left: 2em;
-  margin-bottom: 1em;
-}
-
-#wiki-content li {
-  margin-bottom: 0.5em;
-}
-
-#wiki-content code {
-  background-color: #f0f0f0;
-  padding: 0.2em 0.4em;
-  border-radius: 3px;
-  font-family: monospace;
-  font-size: 0.9em;
-}
-
-#wiki-content pre {
-  background-color: #f0f0f0;
-  padding: 1em;
-  border-radius: 4px;
-  overflow-x: auto; /* Allow horizontal scrolling for code blocks */
-}
-
-#wiki-content pre code {
-  background-color: transparent;
-  padding: 0;
-  border-radius: 0;
-}
-
-#wiki-content blockquote {
-  border-left: 4px solid #ccc;
-  padding-left: 1em;
-  margin-left: 0;
-  color: #666;
-  font-style: italic;
-}
-
-#wiki-content table {
-  border-collapse: collapse;
-  margin-bottom: 1em;
-  width: auto; /* Don't force full width */
-}
-
-#wiki-content th,
-#wiki-content td {
-  border: 1px solid #ccc;
-  padding: 0.5em 0.8em;
-}
-
-#wiki-content th {
-  background-color: #f0f0f0;
-  font-weight: bold;
-  text-align: left;
-}
-
-#wiki-content img {
-  max-width: 100%; /* Ensure images don't overflow */
-  height: auto;
-  display: block; /* Prevent extra space below image */
-  margin-top: 1em;
-  margin-bottom: 1em;
 }
