@@ -1,0 +1,275 @@
+/* style.css */
+
+/* Apply base styles */
+body {
+  font-family: "Inter", sans-serif; /* Default font */
+  background-color: white;
+  color: black;
+  margin: 0;
+  padding: 0;
+  overflow-x: hidden; /* Prevent horizontal scroll */
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative; /* Needed for absolute positioning of title */
+}
+
+/* --- Title Styling and Animation --- */
+
+#main-title {
+  font-family: "Times New Roman", Times, serif;
+  font-size: 4rem; /* Large initial size */
+  text-transform: uppercase;
+  opacity: 0; /* Start hidden */
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%); /* Center initially */
+  white-space: nowrap; /* Prevent wrapping */
+  z-index: 10;
+  /* Animation will be applied via class */
+  transition: opacity 1s ease-in-out; /* Smooth fade-in */
+}
+
+/* Style for the first letter 'T' */
+#main-title .first-letter {
+  font-size: 1.1em; /* Slightly larger */
+  display: inline-block; /* Needed for potential fine-tuning */
+}
+
+/* Add 'loaded' class via JS to trigger fade-in */
+#main-title.loaded {
+  opacity: 1;
+}
+
+/* Keyframes for the combined move and shrink animation - Updated */
+@keyframes titleMoveAndShrink {
+  0% {
+    top: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 4rem;
+    opacity: 1;
+  }
+  100% {
+    top: 5%; /* Final top position */
+    transform: translate(-50%, 0); /* Adjust transform for top alignment */
+    font-size: 1.5rem; /* Final smaller size */
+    opacity: 1;
+  }
+}
+
+/* Apply animation when 'moved' class is added - Updated */
+#main-title.moved {
+  /* animation: name duration timing-function delay iteration-count direction fill-mode; */
+  /* Faster duration */
+  animation: titleMoveAndShrink 0.8s ease-in-out 0s 1 forwards;
+  /* 'forwards' keeps the state of the last keyframe */
+  opacity: 1; /* Explicitly keep opacity 1 after animation if needed */
+}
+
+/* --- Navigation Styling --- */
+
+#nav-links {
+  opacity: 0;
+  /* Adjusted delay to match faster title animation */
+  transition: opacity 0.8s ease-in-out 0.3s;
+  margin-top: 100px; /* Initial space below the final title position */
+  text-align: center;
+  position: relative;
+  z-index: 5;
+  visibility: hidden; /* Hide until ready */
+  width: 100%; /* Ensure it takes width for centering */
+}
+
+/* Make nav visible */
+#nav-links.visible {
+  opacity: 1;
+  visibility: visible;
+}
+
+/* Styling for navigation links */
+.nav-link {
+  font-family: "Garamond", serif; /* Academic font */
+  font-size: 1.25rem;
+  color: black;
+  text-decoration: none;
+  margin: 0 1.5rem; /* Spacing between links */
+  position: relative; /* For the underline pseudo-element */
+  padding-bottom: 5px; /* Space for the underline */
+  cursor: pointer;
+  display: inline-block; /* Ensure proper spacing and hover area */
+}
+
+/* Underline effect - Updated */
+.nav-link::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 0; /* Keep left 0 for width calculation */
+  width: 100%;
+  height: 2px; /* Thicker line */
+  background-color: #b8860b; /* Darker Gold */
+  opacity: 0; /* Hidden initially */
+  transform: scaleX(0); /* Start scaled down */
+  transform-origin: center; /* Expand from center */
+  transition: opacity 0.3s ease-out, transform 0.3s ease-out; /* Fade and scale effect */
+}
+
+/* Underline visible on hover */
+.nav-link:hover::after {
+  opacity: 1;
+  transform: scaleX(1); /* Scale to full width */
+}
+
+/* --- Content Area Styling --- */
+
+#content-container {
+  margin-top: 40px; /* Space below nav */
+  padding: 20px;
+  width: 100%;
+  max-width: 900px; /* Max width for content */
+  flex-grow: 1; /* Allow container to grow */
+  opacity: 0; /* Start hidden */
+  transition: opacity 0.5s ease-in-out; /* Fade in content */
+  box-sizing: border-box; /* Include padding in width calculation */
+}
+
+#content-container.visible {
+  opacity: 1;
+}
+
+/* Basic styling for loaded content */
+#content-container h2 {
+  font-size: 1.8rem;
+  margin-bottom: 1rem;
+  font-family: "Garamond", serif;
+  font-weight: bold; /* Make headings bolder */
+  border-bottom: 1px solid #eee; /* Add subtle separator */
+  padding-bottom: 0.5rem;
+}
+
+#content-container h3 {
+  font-size: 1.5rem;
+  margin-top: 1.5rem;
+  margin-bottom: 0.8rem;
+  font-family: "Garamond", serif;
+  font-weight: bold;
+}
+
+#content-container p {
+  font-size: 1rem;
+  line-height: 1.6;
+  margin-bottom: 1rem;
+}
+
+#content-container ul {
+  list-style: disc;
+  margin-left: 2rem;
+  margin-bottom: 1rem;
+}
+
+#content-container li {
+  margin-bottom: 0.5rem;
+}
+
+/* Style links within the content area */
+#content-container a:not(.nav-link):not(.pdf-link):not(.internal-link) {
+  /* Avoid affecting nav/pdf/internal links */
+  color: #0056b3; /* Standard link blue */
+  text-decoration: underline;
+}
+
+#content-container a:not(.nav-link):not(.pdf-link):not(.internal-link):hover {
+  color: #003d80;
+}
+
+/* --- PDF Viewer Styling --- */
+
+#pdf-selector {
+  margin-bottom: 1.5rem; /* Use rem */
+  text-align: center;
+}
+
+.pdf-link {
+  display: inline-block;
+  margin: 5px 10px; /* Add vertical margin */
+  padding: 8px 15px;
+  background-color: #f0f0f0;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.2s ease, border-color 0.2s ease;
+  font-size: 0.9rem; /* Slightly smaller font */
+  color: #333;
+  text-decoration: none; /* Remove underline */
+  font-family: "Inter", sans-serif; /* Consistent font */
+}
+
+.pdf-link:hover {
+  background-color: #e0e0e0;
+  border-color: #bbb;
+}
+
+#pdf-viewer-area {
+  border: 1px dashed #ccc;
+  padding: 20px;
+  text-align: center;
+  margin-top: 20px;
+}
+
+#pdf-viewer-area > p {
+  /* Style the "Document Viewer:" text */
+  margin-bottom: 15px;
+  color: #555;
+  font-size: 1rem;
+  font-weight: bold;
+}
+
+#pdf-frame {
+  width: 100%;
+  height: 600px; /* Adjust height as needed */
+  border: 1px solid #ddd;
+  background-color: #f9f9f9; /* Light background for the iframe area */
+}
+
+/* --- Message Styling (Loading, Error, Info) --- */
+.message {
+  text-align: center;
+  padding: 15px;
+  margin: 20px auto; /* Center block */
+  border-radius: 4px;
+  max-width: 80%;
+  font-size: 1rem;
+}
+
+.loading-message {
+  color: #555;
+  background-color: #f0f0f0;
+  border: 1px solid #ddd;
+}
+
+.error-message {
+  color: #a94442; /* Dark red */
+  background-color: #f2dede; /* Light red */
+  border: 1px solid #ebccd1; /* Reddish border */
+}
+
+.info-message {
+  color: #31708f; /* Dark blue */
+  background-color: #d9edf7; /* Light blue */
+  border: 1px solid #bce8f1; /* Bluish border */
+}
+.placeholder-message {
+  color: #8a6d3b; /* Dark yellow/brown */
+  background-color: #fcf8e3; /* Light yellow */
+  border: 1px solid #faebcc; /* Yellowish border */
+  padding: 20px;
+  text-align: center;
+}
+
+/* Add styles for placeholder messages inside iframe if needed */
+#pdf-frame p.message {
+  /* Target messages specifically within the iframe via srcdoc */
+  margin: 0; /* Reset margin if needed */
+}
